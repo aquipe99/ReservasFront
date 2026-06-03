@@ -1,0 +1,155 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div class="font-semibold text-xl">Listado Canchas</div>
+  </ng-template>
+  <ng-template #end>
+    @if(canCreate()){
+    <p-button
+      label="Nueva Cancha"
+      icon="pi pi-plus"
+      severity="success"
+      class="mr-2"
+      (onClick)="openNew()"
+    />
+    }
+  </ng-template>
+</p-toolbar>
+
+<p-table
+  #dt
+  [value]="courts()"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [tableStyle]="{ 'min-width': '75rem' }"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-between">
+      <h5 class="m-0"></h5>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input pInputText type="text" (input)="onSearch($event)" placeholder="Search..." />
+      </p-iconfield>
+    </div>
+  </ng-template>
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name" style="min-width: 16rem">
+        Nombre
+        <p-sortIcon field="name" />
+      </th>
+       <th pSortableColumn="description" style="min-width: 16rem">
+        Descripción
+        <p-sortIcon field="description" />
+      </th>
+      <th pSortableColumn="status" style="min-width: 12rem">
+        Estado
+        <p-sortIcon field="status" />
+      </th>
+      <th style="min-width: 12rem"></th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-court>
+    <tr>
+      <td style="min-width: 16rem">{{ court.name }}</td>
+      <td style="min-width: 16rem">{{ court.description }}</td>
+      <td>
+        <p-tag
+          [value]="court.status ? 'ACTIVO' : 'INACTIVO'"
+          [severity]="court.status ? 'success' : 'danger'"
+        ></p-tag>
+      </td>
+      <td>
+        @if(canUpdate()) {
+        <p-button
+          icon="pi pi-pencil"
+          label="Editar"
+          class="mr-2"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="edit(court)"
+        />
+        } @if (canDelete()) {
+        <p-button
+          icon="pi pi-trash"
+          label="Eliminar"
+          severity="danger"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="remove(court)"
+        />
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="3" class="!text-center py-6 text-gray-500">
+        <i class="pi pi-info-circle mr-2"></i>
+        <span class="font-semibold">No se encontraron registros</span>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [style]="{ width: '450px' }"
+  [header]="dialogMode === 'create' ? 'Nueva Cancha' : 'Editar Cancha'"
+  [modal]="true"
+>
+  <ng-template #content>
+    <div class="flex flex-col gap-6">
+      <div>
+        <label for="name" class="block font-bold mb-3">Nombre</label>
+        <input type="text" pInputText id="name" [(ngModel)]="court.name" required autofocus fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['name']"
+          >{{ backendErrors['name'] }}
+        </small>
+      </div>
+       <div>
+        <label for="name" class="block font-bold mb-3">Descripción</label>
+        <textarea 
+        pTextarea         
+        class="w-full"
+        [autoResize]="true"
+        rows="3"        
+        [(ngModel)]="court.description"    
+        > 
+        </textarea>
+        <small class="text-red-500" *ngIf="submitted && backendErrors['description']"
+          >{{ backendErrors['description'] }}
+        </small>
+      </div>   
+  
+      <div class="font-bold mb-3">Estado</div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex items-center">
+          <p-radiobutton id="option1" name="option" [value]="true" [(ngModel)]="court.status" />
+          <label for="option1" class="leading-none ml-2">ACTIVO</label>
+        </div>
+        <div class="flex items-center">
+          <p-radiobutton id="option2" name="option" [value]="false" [(ngModel)]="court.status" />
+          <label for="option2" class="leading-none ml-2">INACTIVO</label>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogVisible = false" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="court.id ? update() : save()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />
