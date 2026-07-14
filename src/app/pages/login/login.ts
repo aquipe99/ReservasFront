@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Auth } from '../../core/services/auth/auth';
 import { Router, RouterModule } from '@angular/router';
-import { LoginRequest } from '../../core/models/login-request';
+import { AuthRequest } from '../../core/models/auth-request';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
@@ -45,7 +45,7 @@ export class Login {
     if (this.errors.email || this.errors.password) {
       return;
     }
-    const payload: LoginRequest = {
+    const payload: AuthRequest = {
       email: this.email,
       password: this.password
     };
@@ -53,18 +53,30 @@ export class Login {
 
     this.auth.login(payload).subscribe({
       next: (res) => {
-        this.auth.saveSession(res.token, res.user);
         this.router.navigate(['/inicio']);
       },
-      error: (err) => {
-
-        if (err.error?.codigo === 400 && err.error.errores) {
-          this.errors.email = err.error.errores.email || null;
-          this.errors.password = err.error.errores.password || null;
-        }      
-        if (err.error?.codigo === 401) {
-          this.errors.general = err.error.mensaje;
+      error: (err) => {       
+        this.errors ={
+          email:null,
+          password:null,
+          general:null
         }
+        // Errores de validación por campo
+        if (err.error?.errors?.length) {
+          err.error.errors.forEach((e: any) => {
+            if (e.field in this.errors) {
+              this.errors[e.field] = e.message;
+            }
+          });
+          return;
+        }
+        // Error general (credenciales inválidas, acceso denegado, etc.)
+        if (err.error?.message) {
+          this.errors.general = err.error.message;
+          return;
+        }
+      // Fallback
+      this.errors.general = 'Ocurrió un error inesperado';
       }
     });
   }

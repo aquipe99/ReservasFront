@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { LoginRequest } from '../../models/login-request';
-import { LoginResponse } from '../../models/login-response';
+import { AuthRequest } from '../../models/auth-request';
 import { Menu } from '../menu/menu';
-import { EMPTY, tap } from 'rxjs';
-
+import { EMPTY, Observable, forkJoin, throwError } from 'rxjs';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import { ApiResponse } from '../../models/api-response';
 
 @Injectable({
   providedIn: 'root',
@@ -13,36 +13,95 @@ import { EMPTY, tap } from 'rxjs';
 export class Auth {
 
   private apiUrl = environment.apiUrl + '/auth';
+  private _accessToken: string | null = null;
   
-  userSignal =signal<any>(this.getUserFromLocalStorage());
-  constructor(private http: HttpClient,private menuService :Menu ) {
-   const storeduser = this.getUserFromLocalStorage();
-   this.userSignal.set(storeduser);
-   if(storeduser?.menus){
-    this.menuService.setMenu(storeduser.menus);
-   }
-  }
-  private getUserFromLocalStorage(){
-    const u= localStorage.getItem('user');
-    return u ? JSON.parse(u):null;
+  userSignal = signal<any>(null);
+  
+  constructor(private http: HttpClient, private menuService: Menu) {}
+
+  login(payload: AuthRequest): Observable<any> {
+    return this.http.post<ApiResponse<{ token: string }>>(`${this.apiUrl}/login`, payload, { withCredentials: true }).pipe(
+      switchMap(res => {
+        const token = res.data.token;
+        
+        // Almacenamos el token en memoria para las peticiones de perfil y menú
+        this._accessToken = token;
+
+        return forkJoin({
+          profile: this.http.get<ApiResponse<any>>(`${environment.apiUrl}/users/me`),
+          menus: this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/users/me/menus`)
+        }).pipe(
+          map(({ profile, menus }) => {
+            const transformedMenus = this.transformMenus(menus.data);
+            const user = {
+              id: profile.data.id,
+              name: profile.data.name,
+              email: profile.data.email,
+              role: profile.data.roleName,
+              menus: transformedMenus
+            };
+
+            this.saveSession(token, user);
+            return { token, user };
+          }),
+          catchError(err => {
+            this.logout();
+            return throwError(() => err);
+          })
+        );
+      })
+    );
   }
 
-  login(payload: LoginRequest) {
- 
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, payload);
+  refreshSession(): Observable<any> {
+    return this.http.post<ApiResponse<{ token: string }>>(
+      `${this.apiUrl}/refresh`,
+      {},
+      { withCredentials: true }
+    ).pipe(
+      switchMap(res => {
+        const token = res.data.token;
+        this._accessToken = token;
+
+        return forkJoin({
+          profile: this.http.get<ApiResponse<any>>(`${environment.apiUrl}/users/me`),
+          menus: this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/users/me/menus`)
+        }).pipe(
+          tap(({ profile, menus }) => {
+            const transformedMenus = this.transformMenus(menus.data);
+            const user = {
+              id: profile.data.id,
+              name: profile.data.name,
+              email: profile.data.email,
+              role: profile.data.roleName,
+              menus: transformedMenus
+            };
+
+            this.saveSession(token, user);
+          }),
+          catchError(err => {
+            this.logout();
+            return throwError(() => err);
+          })
+        );
+      }),
+      catchError(err => {
+        this.logout();
+        return throwError(() => err);
+      })
+    );
   }
 
   saveSession(token: string, user: any) {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    if(user.menus){
-      this.menuService.setMenu(user.menus)
-    }
+    this._accessToken = token;
     this.userSignal.set(user);
+    if (user?.menus) {
+      this.menuService.setMenu(user.menus);
+    }
   }
 
   get token(): string | null {
-    return localStorage.getItem('token');
+    return this._accessToken;
   }
 
   get user() {   
@@ -50,25 +109,51 @@ export class Auth {
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    this._accessToken = null;
+    this.userSignal.set(null);
+    this.menuService.setMenu([]);
+    this.http.post<ApiResponse<void>>(`${this.apiUrl}/logout`, {}, { withCredentials: true }).subscribe({
+      error: () => {} // Ignorar errores de red al cerrar sesión
+    });
   }
-    refreshPermissions() {
-      if (!this.token) return EMPTY;
 
-      return this.http
-        .get<any>(`${this.apiUrl}/me`)
-        .pipe(
-          tap((res) => {
-            const user = res?.data; 
-            if (user) {              
-              localStorage.setItem('user', JSON.stringify(user));              
-              this.userSignal.set(user);              
-              if (user.menus) {
-                this.menuService.setMenu(user.menus);
-              }
-            }
-          })
-        );
-    }
+  refreshPermissions(): Observable<any> {
+    if (!this.token) return EMPTY;
+
+    return forkJoin({
+      profile: this.http.get<ApiResponse<any>>(`${environment.apiUrl}/users/me`),
+      menus: this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/users/me/menus`)
+    }).pipe(
+      tap(({ profile, menus }) => {
+        const transformedMenus = this.transformMenus(menus.data);
+        const user = {
+          id: profile.data.id,
+          name: profile.data.name,
+          email: profile.data.email,
+          role: profile.data.roleName,
+          menus: transformedMenus
+        };
+
+        this.userSignal.set(user);
+        this.menuService.setMenu(transformedMenus);
+      })
+    );
+  }
+
+  private transformMenus(menus: any[]): any[] {
+    if (!menus) return [];
+    return menus.map(menu => {
+      return {
+        id: menu.id,
+        description: menu.description,
+        link: menu.link,
+        icon: menu.icon,
+        canCreate: menu.permissions?.canCreate ?? false,
+        canRead: menu.permissions?.canRead ?? false,
+        canUpdate: menu.permissions?.canUpdate ?? false,
+        canDelete: menu.permissions?.canDelete ?? false,
+        items: menu.submenus ? this.transformMenus(menu.submenus) : []
+      };
+    });
+  }
 }

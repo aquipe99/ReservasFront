@@ -11,7 +11,7 @@ import { CourtRequest } from '../../models/court-request';
 })
 export class Court {
   
-  private apiUrl =environment.apiUrl + '/Court';
+  private apiUrl = environment.apiUrl + '/courts';
   constructor(private http:HttpClient){}
 
     getAll(

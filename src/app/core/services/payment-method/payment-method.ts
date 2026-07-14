@@ -10,7 +10,7 @@ import { PaymentMethodRequest } from '../../models/paymentmethod-request';
 })
 export class PaymentMethod {
   
-    private apiUrl = environment.apiUrl + '/PaymentMethods';
+    private apiUrl = environment.apiUrl + '/paymentmethods';
     constructor(private http: HttpClient){}
 
     getAll(

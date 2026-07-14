@@ -190,19 +190,24 @@ export class PaymentMethodComponent {
             next: (res) => {
                 this.dialogVisible = false;   
                 this.dt.reset();             
-                this.toast(res.mensaje || 'Actualizado correctamente','success');
+                this.toast(res.message || 'Actualizado correctamente','success');
                
             },
             error: (err) =>{
-                if(err.status === 400){                 
-                 this.backendErrors = err.error?.errores || {};             
-                }
-                else if (err.status === 403) {
-                this.toast('No tienes permisos para crear', 'error');
-                }
-                else {
-                    this.toast('Ocurrió un error al crear', 'error');
-                }
+                    if(err.status === 400 ){
+
+                        this.backendErrors = this.mapBackendErrors(err.error?.errors);
+
+                        if (!err.error?.errors) {
+                            this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                        }
+                    }
+                    else if (err.status === 403) {
+                          this.toast(err.error?.message || 'No autorizado', 'error');
+                    }
+                    else {
+                        this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                    }
             }
         });
     }
@@ -214,18 +219,23 @@ export class PaymentMethodComponent {
             next: (res) =>{  
                 this.dialogVisible=false;  
                 this.dt.reset();  
-                this.toast(res.mensaje || 'Creado correctamente','success');   
+                this.toast(res.message || 'Creado correctamente','success');   
             },
             error: (err) => {
-                if(err.status === 400 ){
-                    this.backendErrors = err.error?.errores || {}; 
-                }
-                else if (err.status === 403) {
-                this.toast('No tienes permisos para crear', 'error');
-                }
-                else {
-                    this.toast('Ocurrió un error al crear', 'error');
-                }
+                    if(err.status === 400 ){
+
+                        this.backendErrors = this.mapBackendErrors(err.error?.errors);
+
+                        if (!err.error?.errors) {
+                            this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                        }
+                    }
+                    else if (err.status === 403) {
+                          this.toast(err.error?.message || 'No autorizado', 'error');
+                    }
+                    else {
+                        this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                    }
             },
         });   
     }
@@ -237,7 +247,7 @@ export class PaymentMethodComponent {
                 this.service.delete(pm.id!).subscribe({
                     next: (res) => {       
                         this.dt.reset();
-                        this.toast(res.mensaje || 'Eliminado correctamente', 'success');                 
+                        this.toast(res.message || 'Eliminado correctamente', 'success');                 
                     },
                     error: (err) => {                                 
                         if (err.status === 403) {
@@ -264,6 +274,19 @@ export class PaymentMethodComponent {
         });
     }
 
+    private mapBackendErrors(errors: any[] | null): { [key: string]: string } {
+        const result: { [key: string]: string } = {};
+
+        if (!errors) {
+            return result;
+        }
+
+        for (const error of errors) {
+            result[error.field] = error.message;
+        }
+
+        return result;
+    }
     
 }
 function findMenuByLink(menus: any[], link: string): any | null {

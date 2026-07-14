@@ -1,5 +1,8 @@
+import { ErrorDetail } from "./error-detail";
+
 export interface ApiResponse<T> {
-  codigo: number;
-  mensaje: string;
+  success: boolean;
+  message: string;
   data: T;
+  errors: ErrorDetail[];
 }

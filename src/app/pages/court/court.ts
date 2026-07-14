@@ -168,18 +168,22 @@ export class CourtComponent {
                 next: (res) => {
                     this.dialogVisible = false;   
                     this.dt.reset();             
-                    this.toast(res.mensaje || 'Actualizado correctamente','success');
+                    this.toast(res.message || 'Actualizado correctamente','success');
                    
                 },
                 error: (err) =>{
                     if(err.status === 400){                 
-                     this.backendErrors = err.error?.errores || {};             
+                            this.backendErrors = this.mapBackendErrors(err.error?.errors);
+
+                        if (!err.error?.errors) {
+                            this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                        }           
                     }
                     else if (err.status === 403) {
-                    this.toast('No tienes permisos para crear', 'error');
+                          this.toast(err.error?.message || 'No autorizado', 'error');
                     }
                     else {
-                        this.toast('Ocurrió un error al crear', 'error');
+                       this.toast(err.error?.message || 'Ocurrió un error', 'error');
                     }
                 }
             });
@@ -192,17 +196,22 @@ export class CourtComponent {
                 next: (res) =>{  
                     this.dialogVisible=false;  
                     this.dt.reset();  
-                    this.toast(res.mensaje || 'Creado correctamente','success');   
+                    this.toast(res.message || 'Creado correctamente','success');   
                 },
                 error: (err) => {
                     if(err.status === 400 ){
-                        this.backendErrors = err.error?.errores || {}; 
+
+                        this.backendErrors = this.mapBackendErrors(err.error?.errors);
+
+                        if (!err.error?.errors) {
+                            this.toast(err.error?.message || 'Ocurrió un error', 'error');
+                        }
                     }
                     else if (err.status === 403) {
-                    this.toast('No tienes permisos para crear', 'error');
+                          this.toast(err.error?.message || 'No autorizado', 'error');
                     }
                     else {
-                        this.toast('Ocurrió un error al crear', 'error');
+                        this.toast(err.error?.message || 'Ocurrió un error', 'error');
                     }
                 },
             });   
@@ -215,7 +224,7 @@ export class CourtComponent {
                     this.service.delete(pm.id!).subscribe({
                         next: (res) => {       
                             this.dt.reset();
-                            this.toast(res.mensaje || 'Eliminado correctamente', 'success');                 
+                            this.toast(res.message || 'Eliminado correctamente', 'success');                 
                         },
                         error: (err) => {                                 
                             if (err.status === 403) {
@@ -250,8 +259,23 @@ export class CourtComponent {
             life: 3000
         });
     }
+    
+    private mapBackendErrors(errors: any[] | null): { [key: string]: string } {
+        const result: { [key: string]: string } = {};
+
+        if (!errors) {
+            return result;
+        }
+
+        for (const error of errors) {
+            result[error.field] = error.message;
+        }
+
+        return result;
+    }
 
 }
+
 function findMenuByLink(menus: any[], link: string): any | null {
   for (const menu of menus) {
     if (menu.link?.toLowerCase() === link.toLowerCase()) {

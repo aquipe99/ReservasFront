@@ -1,5 +1,5 @@
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling  } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
@@ -7,6 +7,9 @@ import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { MessageService } from 'primeng/api';
+import { Auth } from './core/services/auth/auth';
+import { lastValueFrom } from 'rxjs';
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -22,6 +25,12 @@ export const appConfig: ApplicationConfig = {
         }
       }
     }),
-    MessageService
+    MessageService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (auth: Auth) => () => lastValueFrom(auth.refreshSession()).catch(() => {}),
+      deps: [Auth],
+      multi: true
+    }
   ]
 };
