@@ -43,6 +43,18 @@ export const routes: Routes = [
              import('./pages/role/role').then(m => m.RoleComponent)
         },
         {
+          path: 'Menu',
+          data: { routePath: 'Menu', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/menu/menu').then(m => m.MenuComponent)
+        },
+        {
+          path: 'Usuario',
+          data: { routePath: 'Usuario', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/user/user').then(m => m.UserComponent)
+        },
+        {
           path: 'unauthorized',
          loadComponent: () =>
               import('./pages/unauthorized/unauthorized')

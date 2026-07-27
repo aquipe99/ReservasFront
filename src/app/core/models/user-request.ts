@@ -1,9 +1,9 @@
-export interface UserResponse {
-  id: number;
+export interface UserRequest {
+  id?: number;
   name: string;
   phone: string;
   email: string;
+  password?: string;
   roleId: number;
-  roleName: string;
   active: boolean;
 }

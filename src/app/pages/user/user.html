@@ -1,0 +1,229 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div class="font-semibold text-xl">Listado Usuarios</div>
+  </ng-template>
+  <ng-template #end>
+    @if(canCreate()){
+    <p-button
+      label="Nuevo Usuario"
+      icon="pi pi-plus"
+      severity="success"
+      class="mr-2"
+      (onClick)="openNew()"
+    />
+    }
+  </ng-template>
+</p-toolbar>
+
+<p-table
+  #dt
+  [value]="users()"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [tableStyle]="{ 'min-width': '75rem' }"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-between">
+      <h5 class="m-0"></h5>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
+      </p-iconfield>
+    </div>
+  </ng-template>
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="name" style="min-width: 14rem">
+        Nombre
+        <p-sortIcon field="name" />
+      </th>
+      <th pSortableColumn="phone" style="min-width: 10rem">
+        Teléfono
+        <p-sortIcon field="phone" />
+      </th>
+      <th pSortableColumn="email" style="min-width: 14rem">
+        Email
+        <p-sortIcon field="email" />
+      </th>
+      <th style="min-width: 10rem">Rol</th>
+      <th pSortableColumn="active" style="min-width: 10rem">
+        Estado
+        <p-sortIcon field="active" />
+      </th>
+      <th style="min-width: 12rem">Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-item>
+    <tr>
+      <td style="min-width: 14rem">{{ item.name }}</td>
+      <td style="min-width: 10rem">{{ item.phone || '-' }}</td>
+      <td style="min-width: 14rem">{{ item.email }}</td>
+      <td style="min-width: 10rem">{{ item.roleName }}</td>
+      <td>
+        <p-tag
+          [value]="item.active ? 'ACTIVO' : 'INACTIVO'"
+          [severity]="item.active ? 'success' : 'danger'"
+        ></p-tag>
+      </td>
+      <td>
+        @if(canUpdate()) {
+        <p-button
+          icon="pi pi-pencil"
+          label="Editar"
+          class="mr-2"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="edit(item)"
+        />
+        } @if (canDelete()) {
+        <p-button
+          icon="pi pi-trash"
+          label="Eliminar"
+          severity="danger"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="remove(item)"
+        />
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="6" class="!text-center py-6 text-gray-500">
+        <i class="pi pi-info-circle mr-2"></i>
+        <span class="font-semibold">No se encontraron registros</span>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [style]="{ width: '450px' }"
+  [header]="dialogMode === 'create' ? 'Nuevo Usuario' : 'Editar Usuario'"
+  [modal]="true"
+>
+  <ng-template #content>
+    <form [formGroup]="userForm" class="flex flex-col gap-6">
+      <div>
+        <label for="name" class="block font-bold mb-3">Nombre</label>
+        <input type="text" pInputText id="name" formControlName="name" autofocus fluid />
+        <div *ngIf="submitted">
+          <small class="text-red-500 block" *ngIf="userForm.get('name')?.errors?.['required']">
+            El nombre es requerido.
+          </small>
+          <small class="text-red-500 block" *ngIf="userForm.get('name')?.errors?.['maxlength']">
+            El nombre no debe superar 20 caracteres.
+          </small>
+          <small class="text-red-500 block" *ngIf="backendErrors['name']">
+            {{ backendErrors['name'] }}
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <label for="phone" class="block font-bold mb-3">Teléfono</label>
+        <input type="text" pInputText id="phone" formControlName="phone" fluid />
+        <div *ngIf="submitted">
+          <small class="text-red-500 block" *ngIf="userForm.get('phone')?.errors?.['maxlength']">
+            El teléfono no debe superar 10 caracteres.
+          </small>
+          <small class="text-red-500 block" *ngIf="backendErrors['phone']">
+            {{ backendErrors['phone'] }}
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <label for="email" class="block font-bold mb-3">Email</label>
+        <input type="email" pInputText id="email" formControlName="email" fluid />
+        <div *ngIf="submitted">
+          <small class="text-red-500 block" *ngIf="userForm.get('email')?.errors?.['required']">
+            El email es requerido.
+          </small>
+          <small class="text-red-500 block" *ngIf="userForm.get('email')?.errors?.['email']">
+            El formato del email no es válido.
+          </small>
+          <small class="text-red-500 block" *ngIf="userForm.get('email')?.errors?.['maxlength']">
+            El email no debe superar 100 caracteres.
+          </small>
+          <small class="text-red-500 block" *ngIf="backendErrors['email']">
+            {{ backendErrors['email'] }}
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <label for="password" class="block font-bold mb-3">Contraseña</label>
+        <input type="password" pInputText id="password" formControlName="password" fluid />
+        <div *ngIf="submitted">
+          <small class="text-red-500 block" *ngIf="userForm.get('password')?.errors?.['required']">
+            La contraseña es requerida.
+          </small>
+          <small class="text-red-500 block" *ngIf="userForm.get('password')?.errors?.['minlength']">
+            La contraseña debe tener al menos 6 caracteres.
+          </small>
+          <small class="text-red-500 block" *ngIf="userForm.get('password')?.errors?.['maxlength']">
+            La contraseña no debe superar 256 caracteres.
+          </small>
+          <small class="text-red-500 block" *ngIf="backendErrors['password']">
+            {{ backendErrors['password'] }}
+          </small>
+        </div>
+      </div>
+
+      <div>
+        <label for="roleId" class="block font-bold mb-3">Rol</label>
+        <p-select
+          id="roleId"
+          [options]="roles()"
+          formControlName="roleId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Seleccione un rol"
+          [showClear]="true"
+          fluid
+        ></p-select>
+        <div *ngIf="submitted">
+          <small class="text-red-500 block" *ngIf="userForm.get('roleId')?.errors?.['required']">
+            El rol es requerido.
+          </small>
+          <small class="text-red-500 block" *ngIf="backendErrors['roleId']">
+            {{ backendErrors['roleId'] }}
+          </small>
+        </div>
+      </div>
+
+      <div class="font-bold mb-3">Estado</div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex items-center">
+          <p-radiobutton id="activeOption1" name="active" [value]="true" formControlName="active" />
+          <label for="activeOption1" class="leading-none ml-2">ACTIVO</label>
+        </div>
+        <div class="flex items-center">
+          <p-radiobutton id="activeOption2" name="active" [value]="false" formControlName="active" />
+          <label for="activeOption2" class="leading-none ml-2">INACTIVO</label>
+        </div>
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogVisible = false" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="save()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

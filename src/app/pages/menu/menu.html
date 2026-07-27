@@ -1,0 +1,204 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div class="font-semibold text-xl">Listado Menús</div>
+  </ng-template>
+  <ng-template #end>
+    @if(canCreate()){
+    <p-button
+      label="Nuevo Menú"
+      icon="pi pi-plus"
+      severity="success"
+      class="mr-2"
+      (onClick)="openNew()"
+    />
+    }
+  </ng-template>
+</p-toolbar>
+
+<p-table
+  #dt
+  [value]="menus()"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [tableStyle]="{ 'min-width': '75rem' }"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-between">
+      <h5 class="m-0"></h5>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
+      </p-iconfield>
+    </div>
+  </ng-template>
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="description" style="min-width: 14rem">
+        Descripción
+        <p-sortIcon field="description" />
+      </th>
+      <th pSortableColumn="link" style="min-width: 10rem">
+        Enlace
+        <p-sortIcon field="link" />
+      </th>
+      <th style="min-width: 8rem">Ícono</th>
+      <th pSortableColumn="menuOrder" style="min-width: 8rem">
+        Orden
+        <p-sortIcon field="menuOrder" />
+      </th>
+      <th style="min-width: 12rem">Ruta API</th>
+      <th style="min-width: 10rem">Menú Padre</th>
+      <th pSortableColumn="active" style="min-width: 10rem">
+        Estado
+        <p-sortIcon field="active" />
+      </th>
+      <th style="min-width: 12rem">Acciones</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-item>
+    <tr>
+      <td style="min-width: 14rem">{{ item.description }}</td>
+      <td style="min-width: 10rem">{{ item.link || '-' }}</td>
+      <td style="min-width: 8rem">
+        <i [class]="item.icon + ' mr-2'"></i>
+        {{ item.icon }}
+      </td>
+      <td style="min-width: 8rem">{{ item.menuOrder }}</td>
+      <td style="min-width: 12rem">{{ item.apiPath || '-' }}</td>
+      <td style="min-width: 10rem">{{ getParentDescription(item.parentMenu) }}</td>
+      <td>
+        <p-tag
+          [value]="item.active ? 'ACTIVO' : 'INACTIVO'"
+          [severity]="item.active ? 'success' : 'danger'"
+        ></p-tag>
+      </td>
+      <td>
+        @if(canUpdate()) {
+        <p-button
+          icon="pi pi-pencil"
+          label="Editar"
+          class="mr-2"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="edit(item)"
+        />
+        } @if (canDelete()) {
+        <p-button
+          icon="pi pi-trash"
+          label="Eliminar"
+          severity="danger"
+          [rounded]="true"
+          [outlined]="true"
+          (click)="remove(item)"
+        />
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="8" class="!text-center py-6 text-gray-500">
+        <i class="pi pi-info-circle mr-2"></i>
+        <span class="font-semibold">No se encontraron registros</span>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [style]="{ width: '450px' }"
+  [header]="dialogMode === 'create' ? 'Nuevo Menú' : 'Editar Menú'"
+  [modal]="true"
+>
+  <ng-template #content>
+    <div class="flex flex-col gap-6">
+      <div>
+        <label for="description" class="block font-bold mb-3">Descripción</label>
+        <input type="text" pInputText id="description" [(ngModel)]="menu.description" required autofocus fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['description']"
+          >{{ backendErrors['description'] }}
+        </small>
+      </div>
+
+      <div>
+        <label for="link" class="block font-bold mb-3">Enlace (Ruta Frontend)</label>
+        <input type="text" pInputText id="link" [(ngModel)]="menu.link" fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['link']"
+          >{{ backendErrors['link'] }}
+        </small>
+      </div>
+
+      <div>
+        <label for="icon" class="block font-bold mb-3">Ícono (CSS pi pi-*)</label>
+        <input type="text" pInputText id="icon" [(ngModel)]="menu.icon" required fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['icon']"
+          >{{ backendErrors['icon'] }}
+        </small>
+      </div>
+
+      <div>
+        <label for="menuOrder" class="block font-bold mb-3">Orden</label>
+        <input type="number" pInputText id="menuOrder" [(ngModel)]="menu.menuOrder" required fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['menuOrder']"
+          >{{ backendErrors['menuOrder'] }}
+        </small>
+      </div>
+
+      <div>
+        <label for="apiPath" class="block font-bold mb-3">Ruta de la API</label>
+        <input type="text" pInputText id="apiPath" [(ngModel)]="menu.apiPath" fluid />
+        <small class="text-red-500" *ngIf="submitted && backendErrors['apiPath']"
+          >{{ backendErrors['apiPath'] }}
+        </small>
+      </div>
+
+      <div>
+        <label for="parentMenu" class="block font-bold mb-3">Menú Padre</label>
+        <p-select
+          id="parentMenu"
+          [options]="parentMenus()"
+          [(ngModel)]="menu.parentMenu"
+          optionLabel="description"
+          optionValue="id"
+          placeholder="Seleccione un menú padre"
+          [showClear]="true"
+          fluid
+        ></p-select>
+        <small class="text-red-500" *ngIf="submitted && backendErrors['parentMenu']"
+          >{{ backendErrors['parentMenu'] }}
+        </small>
+      </div>
+
+      <div class="font-bold mb-3">Estado</div>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex items-center">
+          <p-radiobutton id="activeOption1" name="activeOption" [value]="true" [(ngModel)]="menu.active" />
+          <label for="activeOption1" class="leading-none ml-2">ACTIVO</label>
+        </div>
+        <div class="flex items-center">
+          <p-radiobutton id="activeOption2" name="activeOption" [value]="false" [(ngModel)]="menu.active" />
+          <label for="activeOption2" class="leading-none ml-2">INACTIVO</label>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogVisible = false" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="menu.id ? update() : save()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />
