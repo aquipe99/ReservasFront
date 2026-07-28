@@ -38,7 +38,7 @@ import { CommonModule } from '@angular/common';
 })
 export class RoleComponent {
     ngOnInit(){ 
-        if(this.auth.token){
+        if(this.auth.isAuthenticated){
             this.auth.refreshPermissions().subscribe({
                 next: () => {                      
                     if(this.dt){
@@ -222,9 +222,12 @@ export class RoleComponent {
                             }                     
                             else if (err.status === 404) {
                                 this.toast('Registro no encontrado', 'warn');
-                            } 
+                            }
+                            else if (err.status === 409) {
+                                this.toast(err.error?.message || 'No se puede eliminar el rol porque tiene registros relacionados', 'warn');
+                            }
                             else {
-                                this.toast('Ocurrió un error al eliminar', 'error');
+                                this.toast(err.error?.message || 'Ocurrió un error al eliminar', 'error');
                             }
                         }
                     });

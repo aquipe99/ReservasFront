@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Auth } from '../../core/services/auth/auth';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthRequest } from '../../core/models/auth-request';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -28,7 +28,21 @@ export class Login {
     general: null
   };
 
-  constructor( private auth: Auth,private router: Router  ) {}
+  constructor(
+    private auth: Auth,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    const reason = this.route.snapshot.queryParamMap.get('reason');
+
+    if (reason === 'inactivity') {
+      this.errors.general = 'La sesión se cerró por inactividad.';
+    } else if (reason === 'expired') {
+      this.errors.general = 'La sesión expiró. Por favor inicia sesión nuevamente.';
+    }
+  }
 
   clearError(field: string) {  
     this.errors[field] = null;

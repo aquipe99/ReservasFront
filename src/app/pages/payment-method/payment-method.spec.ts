@@ -1,18 +1,22 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
+import { MessageService } from 'primeng/api';
 
-import { PaymentMethod } from './payment-method';
+import { PaymentMethodComponent } from './payment-method';
 
-describe('PaymentMethod', () => {
-  let component: PaymentMethod;
-  let fixture: ComponentFixture<PaymentMethod>;
+describe('PaymentMethodComponent', () => {
+  let component: PaymentMethodComponent;
+  let fixture: ComponentFixture<PaymentMethodComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PaymentMethod]
+      imports: [PaymentMethodComponent],
+      providers: [provideHttpClient(), provideRouter([]), MessageService]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PaymentMethod);
+    fixture = TestBed.createComponent(PaymentMethodComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -98,7 +98,7 @@ export class UserComponent {
   }
 
   ngOnInit() {
-    if (this.auth.token) {
+    if (this.auth.isAuthenticated) {
       this.auth.refreshPermissions().subscribe({
         next: () => {
           if (this.dt) {
@@ -118,7 +118,7 @@ export class UserComponent {
       name: ['', [Validators.required, Validators.maxLength(20)]],
       phone: ['', [Validators.maxLength(10)]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
-      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(256)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(8)]],
       roleId: [null, [Validators.required]],
       active: [true, [Validators.required]]
     });
@@ -185,7 +185,7 @@ export class UserComponent {
       active: true
     });
     
-    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(256)]);
+    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
 
     this.dialogVisible = true;
@@ -206,7 +206,7 @@ export class UserComponent {
       active: item.active
     });
 
-    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6), Validators.maxLength(256)]);
+    this.userForm.get('password')?.setValidators([Validators.minLength(6), Validators.maxLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
 
     this.dialogVisible = true;
@@ -220,7 +220,11 @@ export class UserComponent {
       return;
     }
 
-    const payload: UserRequest = this.userForm.value;
+    const payload: UserRequest = { ...this.userForm.value };
+
+    if (this.dialogMode === 'edit' && !payload.password?.trim()) {
+      delete payload.password;
+    }
 
     if (this.dialogMode === 'create') {
       this.userService.create(payload).subscribe({

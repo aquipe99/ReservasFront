@@ -28,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     MessageService,
     {
       provide: APP_INITIALIZER,
-      useFactory: (auth: Auth) => () => lastValueFrom(auth.refreshSession()).catch(() => {}),
+      useFactory: (auth: Auth) => () => lastValueFrom(auth.initializeSession()).catch(() => {}),
       deps: [Auth],
       multi: true
     }

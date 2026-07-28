@@ -167,7 +167,10 @@
 
       <div>
         <label for="password" class="block font-bold mb-3">Contraseña</label>
-        <input type="password" pInputText id="password" formControlName="password" fluid />
+        <input type="password" pInputText id="password" formControlName="password" maxlength="8" fluid />
+        <small class="text-muted-color block mt-1" *ngIf="dialogMode === 'edit'">
+          Dejar vacío para conservar la contraseña actual.
+        </small>
         <div *ngIf="submitted">
           <small class="text-red-500 block" *ngIf="userForm.get('password')?.errors?.['required']">
             La contraseña es requerida.
@@ -176,7 +179,7 @@
             La contraseña debe tener al menos 6 caracteres.
           </small>
           <small class="text-red-500 block" *ngIf="userForm.get('password')?.errors?.['maxlength']">
-            La contraseña no debe superar 256 caracteres.
+            La contraseña no debe superar 8 caracteres.
           </small>
           <small class="text-red-500 block" *ngIf="backendErrors['password']">
             {{ backendErrors['password'] }}

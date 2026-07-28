@@ -16,6 +16,11 @@ export const permissionGuard: CanActivateFn = (route, state) => {
     router.navigate(['/login']);
     return false;
   }
+
+  if (route.routeConfig?.path === 'inicio') {
+    return true;
+  }
+
   const routePath = (route.data?.['routePath'] ) as string;
   const permission = route.data['permission'] as
     | 'canRead'

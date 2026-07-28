@@ -45,7 +45,7 @@ import { Textarea } from 'primeng/textarea';
 })
 export class CourtComponent {
     ngOnInit(){ 
-        if(this.auth.token){
+        if(this.auth.isAuthenticated){
             this.auth.refreshPermissions().subscribe({
                 next: () => {                      
                     if(this.dt){

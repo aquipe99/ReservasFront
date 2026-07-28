@@ -14,7 +14,7 @@ export class App {
 
   ngOnInit() {
     //Refresca los permisos al iniciar la aplicación
-    if(this.auth.token){
+    if(this.auth.isAuthenticated){
       this.auth.refreshPermissions().subscribe({
        
         next: (res) => {  

@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://tuservidor-produccion/api/v1'
+  apiUrl: '/api/v1',
+  inactivityTimeout: 15 * 60 * 1000
 };

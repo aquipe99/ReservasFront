@@ -49,6 +49,12 @@ export class Role {
       return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
   getForSelect(): Observable<ApiResponse<PageResponse<RoleRequest>>> {
-  return this.http.get<ApiResponse<PageResponse<RoleRequest>>>(this.apiUrl);
-}
+    const params = new HttpParams()
+      .set('page', 0)
+      .set('size', 1000)
+      .set('sortField', 'name')
+      .set('sortOrder', 'asc');
+
+    return this.http.get<ApiResponse<PageResponse<RoleRequest>>>(this.apiUrl, { params });
+  }
 }

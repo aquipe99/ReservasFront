@@ -45,7 +45,7 @@ import { CommonModule } from '@angular/common';
 })
 export class MenuComponent {
     ngOnInit(){ 
-        if(this.auth.token){
+        if(this.auth.isAuthenticated){
             this.auth.refreshPermissions().subscribe({
                 next: () => {                      
                     if(this.dt){

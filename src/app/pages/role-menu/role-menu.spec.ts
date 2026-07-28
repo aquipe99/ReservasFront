@@ -3,20 +3,19 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { MessageService } from 'primeng/api';
 
-import { CourtComponent } from './court';
+import { RoleMenuComponent } from './role-menu';
 
-describe('CourtComponent', () => {
-  let component: CourtComponent;
-  let fixture: ComponentFixture<CourtComponent>;
+describe('RoleMenuComponent', () => {
+  let component: RoleMenuComponent;
+  let fixture: ComponentFixture<RoleMenuComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CourtComponent],
+      imports: [RoleMenuComponent],
       providers: [provideHttpClient(), provideRouter([]), MessageService]
-    })
-    .compileComponents();
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(CourtComponent);
+    fixture = TestBed.createComponent(RoleMenuComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

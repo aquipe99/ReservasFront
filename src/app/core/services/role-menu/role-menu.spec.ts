@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 
-import { Role } from './role';
+import { RoleMenu } from './role-menu';
 
-describe('RoleService', () => {
-  let service: Role;
+describe('RoleMenu', () => {
+  let service: RoleMenu;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient()]
     });
-    service = TestBed.inject(Role);
+    service = TestBed.inject(RoleMenu);
   });
 
   it('should be created', () => {

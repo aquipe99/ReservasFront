@@ -3,11 +3,14 @@ import {
   HttpInterceptorFn,
   HttpErrorResponse
 } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
+import { catchError, finalize, shareReplay, switchMap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { Auth } from '../services/auth/auth';
 import { MessageService } from 'primeng/api';
+import { environment } from '../../../environments/environment';
+
+let refreshRequest$: Observable<unknown> | null = null;
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
@@ -15,45 +18,68 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const messageService = inject(MessageService);
 
-  const token = auth.token;
+  const isApiRequest = req.url.startsWith(environment.apiUrl);
+  const isAuthRequest = req.url.startsWith(`${environment.apiUrl}/auth`);
+  const csrfToken = getCookie('XSRF-TOKEN');
+  const requiresCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method.toUpperCase());
 
-  // 1️⃣ Clonamos el request y agregamos el token si existe
-  const authReq = token
+  const authReq = isApiRequest
     ? req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
+        withCredentials: true,
+        setHeaders: csrfToken && requiresCsrf
+          ? { 'X-XSRF-TOKEN': csrfToken }
+          : {}
       })
     : req;
 
-  // 2️⃣ Continuamos la request
   return next(authReq).pipe(
-
-    // 3️⃣ Capturamos errores
     catchError((error: HttpErrorResponse) => {
-       if (error.status === 401) {
-        messageService.add({
-          severity: 'warn',
-          summary: 'Sesión expirada',
-          detail: 'Por favor inicia sesión nuevamente',
-          life: 4000
-        });
-        auth.logout();
-        router.navigate(['/login']);
+      if (error.status === 401 && isApiRequest && !isAuthRequest) {
+        return getRefreshRequest(auth, router).pipe(
+          switchMap(() => next(authReq))
+        );
       }
+
       if (error.status === 403) {
-        // 🔐 Token inválido o expirado      
         messageService.add({
           severity: 'warn',
           summary: 'No autorizado',
-          detail: 'No tiene permisos para realizar esta accion',
+          detail: 'No tiene permisos para realizar esta acción',
           life: 4000
-        }); 
-    /*     auth.logout();
-        router.navigate(['/unauthorized']);   */     
+        });
       }
 
       return throwError(() => error);
     })
   );
 };
+
+function getRefreshRequest(auth: Auth, router: Router): Observable<unknown> {
+  if (!refreshRequest$) {
+    refreshRequest$ = auth.refreshAccessToken().pipe(
+      catchError(error => {
+        auth.logout('expired');
+        router.navigate(['/login'], {
+          queryParams: { reason: 'expired' }
+        });
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        refreshRequest$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+  }
+
+  return refreshRequest$;
+}
+
+function getCookie(name: string): string | null {
+  const cookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith(`${name}=`));
+
+  return cookie
+    ? decodeURIComponent(cookie.substring(name.length + 1))
+    : null;
+}
