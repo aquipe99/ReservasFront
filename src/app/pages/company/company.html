@@ -1,0 +1,233 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div>
+      <div class="font-semibold text-xl">Información de la Empresa</div>
+      <small class="text-muted-color">
+        Estos datos se utilizarán posteriormente en tickets y comprobantes.
+      </small>
+    </div>
+  </ng-template>
+  <ng-template #end>
+    @if (canSave()) {
+      <p-button
+        label="Guardar"
+        icon="pi pi-save"
+        severity="success"
+        [loading]="saving"
+        (onClick)="save()"
+      />
+    }
+  </ng-template>
+</p-toolbar>
+
+<div class="card">
+  @if (loading) {
+    <div class="flex justify-center items-center py-8">
+      <p-progressspinner
+        strokeWidth="4"
+        [style]="{ width: '45px', height: '45px' }"
+      ></p-progressspinner>
+    </div>
+  } @else {
+    @if (companyId === null) {
+      <div class="mb-6 p-4 rounded-border bg-blue-50 text-blue-700">
+        <i class="pi pi-info-circle mr-2"></i>
+        Aún no se han registrado los datos de la empresa.
+      </div>
+    }
+
+    <form [formGroup]="companyForm" class="company-form">
+      <div class="form-field field-full">
+        <label for="legalName" class="font-bold">Razón social</label>
+        <input
+          id="legalName"
+          type="text"
+          pInputText
+          formControlName="legalName"
+          maxlength="150"
+          fluid
+        />
+        @if (submitted && companyForm.get('legalName')?.errors?.['required']) {
+          <small class="field-error">La razón social es requerida.</small>
+        }
+        @if (submitted && companyForm.get('legalName')?.errors?.['maxlength']) {
+          <small class="field-error">
+            La razón social no debe superar 150 caracteres.
+          </small>
+        }
+        @if (backendErrors['legalName']) {
+          <small class="field-error">{{ backendErrors['legalName'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="tradeName" class="font-bold">Nombre comercial</label>
+        <input
+          id="tradeName"
+          type="text"
+          pInputText
+          formControlName="tradeName"
+          maxlength="150"
+          fluid
+        />
+        @if (submitted && companyForm.get('tradeName')?.errors?.['required']) {
+          <small class="field-error">El nombre comercial es requerido.</small>
+        }
+        @if (submitted && companyForm.get('tradeName')?.errors?.['maxlength']) {
+          <small class="field-error">
+            El nombre comercial no debe superar 150 caracteres.
+          </small>
+        }
+        @if (backendErrors['tradeName']) {
+          <small class="field-error">{{ backendErrors['tradeName'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="ruc" class="font-bold">RUC</label>
+        <input
+          id="ruc"
+          type="text"
+          pInputText
+          formControlName="ruc"
+          maxlength="11"
+          inputmode="numeric"
+          fluid
+        />
+        @if (
+          submitted
+          && (
+            companyForm.get('ruc')?.errors?.['required']
+            || companyForm.get('ruc')?.errors?.['pattern']
+          )
+        ) {
+          <small class="field-error">El RUC debe contener 11 dígitos.</small>
+        }
+        @if (backendErrors['ruc']) {
+          <small class="field-error">{{ backendErrors['ruc'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="phone" class="font-bold">Teléfono</label>
+        <input
+          id="phone"
+          type="text"
+          pInputText
+          formControlName="phone"
+          maxlength="10"
+          inputmode="numeric"
+          fluid
+        />
+        @if (submitted && companyForm.get('phone')?.errors?.['pattern']) {
+          <small class="field-error">
+            El teléfono debe contener entre 9 y 10 dígitos.
+          </small>
+        }
+        @if (backendErrors['phone']) {
+          <small class="field-error">{{ backendErrors['phone'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="fiscalAddress" class="font-bold">Dirección fiscal</label>
+        <textarea
+          id="fiscalAddress"
+          pTextarea
+          formControlName="fiscalAddress"
+          maxlength="250"
+          rows="3"
+          [autoResize]="true"
+          class="w-full"
+        ></textarea>
+        @if (submitted && companyForm.get('fiscalAddress')?.errors?.['required']) {
+          <small class="field-error">La dirección fiscal es requerida.</small>
+        }
+        @if (submitted && companyForm.get('fiscalAddress')?.errors?.['maxlength']) {
+          <small class="field-error">
+            La dirección fiscal no debe superar 250 caracteres.
+          </small>
+        }
+        @if (backendErrors['fiscalAddress']) {
+          <small class="field-error">{{ backendErrors['fiscalAddress'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="email" class="font-bold">Correo electrónico</label>
+        <input
+          id="email"
+          type="email"
+          pInputText
+          formControlName="email"
+          maxlength="100"
+          fluid
+        />
+        @if (submitted && companyForm.get('email')?.errors?.['email']) {
+          <small class="field-error">El formato del correo no es válido.</small>
+        }
+        @if (submitted && companyForm.get('email')?.errors?.['maxlength']) {
+          <small class="field-error">
+            El correo no debe superar 100 caracteres.
+          </small>
+        }
+        @if (backendErrors['email']) {
+          <small class="field-error">{{ backendErrors['email'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="additionalInfo" class="font-bold">Información adicional</label>
+        <textarea
+          id="additionalInfo"
+          pTextarea
+          formControlName="additionalInfo"
+          maxlength="500"
+          rows="4"
+          [autoResize]="true"
+          class="w-full"
+          placeholder="Texto adicional que podrá mostrarse en los comprobantes"
+        ></textarea>
+        @if (submitted && companyForm.get('additionalInfo')?.errors?.['maxlength']) {
+          <small class="field-error">
+            La información adicional no debe superar 500 caracteres.
+          </small>
+        }
+        @if (backendErrors['additionalInfo']) {
+          <small class="field-error">{{ backendErrors['additionalInfo'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <div class="font-bold">Estado</div>
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex items-center">
+            <p-radiobutton
+              id="companyActive"
+              name="status"
+              [value]="true"
+              formControlName="status"
+            />
+            <label for="companyActive" class="leading-none ml-2">ACTIVO</label>
+          </div>
+          <div class="flex items-center">
+            <p-radiobutton
+              id="companyInactive"
+              name="status"
+              [value]="false"
+              formControlName="status"
+            />
+            <label for="companyInactive" class="leading-none ml-2">INACTIVO</label>
+          </div>
+        </div>
+        @if (backendErrors['status']) {
+          <small class="field-error">{{ backendErrors['status'] }}</small>
+        }
+      </div>
+    </form>
+  }
+</div>

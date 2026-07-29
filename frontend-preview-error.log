@@ -1,0 +1,427 @@
+[1m[33m[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: string | null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: number | null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:313:4:
+[37m      313 │     [32mthis.reservation[37m = {
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:364:17:
+[37m      364 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:654:4:
+[37m      654 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:676:27:
+[37m      676 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: string | null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: number | null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:313:4:
+[37m      313 │     [32mthis.reservation[37m = {
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:364:17:
+[37m      364 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:654:4:
+[37m      654 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:676:27:
+[37m      676 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:106:34:
+[37m      106 │   newClient: ClientRequest = this.[32memptyClient[37m();
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'loadClients' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:152:15:
+[37m      152 │           this.[32mloadClients[37m();
+          ╵                [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: string | null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: number | null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:329:4:
+[37m      329 │     [32mthis.reservation[37m = {
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:380:17:
+[37m      380 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:670:4:
+[37m      670 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:692:27:
+[37m      692 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:106:34:
+[37m      106 │   newClient: ClientRequest = this.[32memptyClient[37m();
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: string | null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: number | null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:347:4:
+[37m      347 │     [32mthis.reservation[37m = {
+          ╵     [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:398:17:
+[37m      398 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:688:4:
+[37m      688 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:710:27:
+[37m      710 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:106:34:
+[37m      106 │   newClient: ClientRequest = this.[32memptyClient[37m();
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:401:17:
+[37m      401 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:691:4:
+[37m      691 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:713:27:
+[37m      713 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:106:34:
+[37m      106 │   newClient: ClientRequest = this.[32memptyClient[37m();
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applyClientToReservation' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:382:9:
+[37m      382 │     this.[32mapplyClientToReservation[37m(selected);
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:386:26:
+[37m      386 │     this.newClient = this.[32memptyClient[37m();
+          ╵                           [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isNewClientValid' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:396:14:
+[37m      396 │     if (!this.[32misNewClientValid[37m()) {
+          ╵               [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applyClientToReservation' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:418:13:
+[37m      418 │         this.[32mapplyClientToReservation[37m(res.data);
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:464:17:
+[37m      464 │       clientDni: [32mthis.reservation.clientDni[37m.trim(),
+          ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:754:4:
+[37m      754 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:776:27:
+[37m      776 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:106:34:
+[37m      106 │   newClient: ClientRequest = this.[32memptyClient[37m();
+          ╵                                   [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applyClientToReservation' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:382:9:
+[37m      382 │     this.[32mapplyClientToReservation[37m(selected);
+          ╵          [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'emptyClient' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:386:26:
+[37m      386 │     this.newClient = this.[32memptyClient[37m();
+          ╵                           [32m~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'isNewClientValid' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:396:14:
+[37m      396 │     if (!this.[32misNewClientValid[37m()) {
+          ╵               [32m~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2339: Property 'applyClientToReservation' does not exist on type 'ReservationComponent'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:418:13:
+[37m      418 │         this.[32mapplyClientToReservation[37m(res.data);
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2739: Type '{ clientName: string; clientDni: string; phone: null; reservationDate: string; startTime: string; endTime: string; courtId: number; paymentMethodId: null; paymentType: string; totalAmount: number; paidAmount: number; }' is missing the following properties from type 'ReservationRequest': clientId, clientDocumentType, clientDocumentNumber[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:758:4:
+[37m      758 │     [32mreturn[37m {
+          ╵     [32m~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS18049: 'request.clientDni' is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.ts:780:27:
+[37m      780 │       && /^[0-9]{8}$/.test([32mrequest.clientDni[37m.trim())
+          ╵                            [32m~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:307:49:
+[37m      307 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:347:49:
+[37m      347 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2533: Object is possibly 'null' or 'undefined'.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/reservation/reservation.html:360:49:
+[37m      360 │ ...  @if (submitted && !reservation.clientDni.[32mmatch[37m('^[0-9]{8}$')) {
+          ╵                                               [32m~~~~~[0m
+
+  Error occurs in the template of component ReservationComponent.
+
+    src/app/pages/reservation/reservation.ts:54:15:
+[37m      54 │   templateUrl: [32m'./reservation.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Unexpected token / at column 25 in [submitted
+          && !/^T[0-9]{3}$/.test(selectedSeries.seriesCode.trim().toUpperCase())
+        ] in E:\ISUR\Reservas Valido\reservas\ReservasFront\src\app\pages\receipt-series\receipt-series.html@160:10[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/receipt-series/receipt-series.html:161:10:
+[37m      161 │           [32msubmitted[37m
+          ╵           [32m~~~~~~~~~[0m
+
+  Error occurs in the template of component ReceiptSeriesComponent.
+
+    src/app/pages/receipt-series/receipt-series.ts:39:15:
+[37m      39 │   templateUrl: [32m'./receipt-series.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2873: This kind of expression is always falsy.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/receipt-series/receipt-series.html:162:13:
+[37m      162 │           && [32m!/^T[0-9]{3}$/.test(selectedSeries.seriesCode.trim()[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ReceiptSeriesComponent.
+
+    src/app/pages/receipt-series/receipt-series.ts:39:15:
+[37m      39 │   templateUrl: [32m'./receipt-series.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Parser Error: Unexpected token / at column 25 in [submitted
+          && !/^T[0-9]{3}$/.test(selectedSeries.seriesCode.trim().toUpperCase())
+        ] in E:\ISUR\Reservas Valido\reservas\ReservasFront\src\app\pages\receipt-series\receipt-series.html@160:10[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/receipt-series/receipt-series.html:161:10:
+[37m      161 │           [32msubmitted[37m
+          ╵           [32m~~~~~~~~~[0m
+
+  Error occurs in the template of component ReceiptSeriesComponent.
+
+    src/app/pages/receipt-series/receipt-series.ts:39:15:
+[37m      39 │   templateUrl: [32m'./receipt-series.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mTS2873: This kind of expression is always falsy.[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/pages/receipt-series/receipt-series.html:162:13:
+[37m      162 │           && [32m!/^T[0-9]{3}$/.test(selectedSeries.seriesCode.trim()[37m...
+          ╵              [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Error occurs in the template of component ReceiptSeriesComponent.
+
+    src/app/pages/receipt-series/receipt-series.ts:39:15:
+[37m      39 │   templateUrl: [32m'./receipt-series.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

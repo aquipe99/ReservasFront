@@ -1,0 +1,17 @@
+.series-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-top: 0.5rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-error {
+  color: var(--p-red-500);
+  font-size: 0.875rem;
+}

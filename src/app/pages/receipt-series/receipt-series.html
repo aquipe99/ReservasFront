@@ -1,0 +1,239 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div>
+      <div class="font-semibold text-xl">Series de comprobantes</div>
+      <small class="text-muted-color">
+        Configura la serie y el próximo correlativo que se usará al emitir tickets.
+      </small>
+    </div>
+  </ng-template>
+  <ng-template #end>
+    @if (canCreateSignal()) {
+      <p-button
+        label="Nueva Serie"
+        icon="pi pi-plus"
+        severity="success"
+        (onClick)="openNew()"
+      />
+    }
+  </ng-template>
+</p-toolbar>
+
+<p-table
+  #dt
+  [value]="series()"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [tableStyle]="{ 'min-width': '65rem' }"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-end">
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          (input)="onSearch($event)"
+          placeholder="Buscar..."
+        />
+      </p-iconfield>
+    </div>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="documentType">
+        Tipo
+        <p-sortIcon field="documentType" />
+      </th>
+      <th pSortableColumn="seriesCode">
+        Serie
+        <p-sortIcon field="seriesCode" />
+      </th>
+      <th pSortableColumn="nextNumber">
+        Próximo número
+        <p-sortIcon field="nextNumber" />
+      </th>
+      <th>Próximo comprobante</th>
+      <th pSortableColumn="status">
+        Estado
+        <p-sortIcon field="status" />
+      </th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-item>
+    <tr>
+      <td>{{ item.documentType }}</td>
+      <td>{{ item.seriesCode }}</td>
+      <td>{{ item.nextNumber }}</td>
+      <td class="font-semibold">
+        {{ item.seriesCode }}-{{ item.nextNumber.toString().padStart(8, '0') }}
+      </td>
+      <td>
+        <p-tag
+          [value]="item.status ? 'ACTIVO' : 'INACTIVO'"
+          [severity]="item.status ? 'success' : 'danger'"
+        ></p-tag>
+      </td>
+      <td>
+        @if (canUpdateSignal()) {
+          <p-button
+            icon="pi pi-pencil"
+            label="Editar"
+            class="mr-2"
+            [rounded]="true"
+            [outlined]="true"
+            (onClick)="edit(item)"
+          />
+        }
+        @if (canDeleteSignal()) {
+          <p-button
+            icon="pi pi-trash"
+            label="Eliminar"
+            severity="danger"
+            [rounded]="true"
+            [outlined]="true"
+            (onClick)="remove(item)"
+          />
+        }
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="6" class="!text-center py-6 text-gray-500">
+        <i class="pi pi-info-circle mr-2"></i>
+        <span class="font-semibold">No se encontraron series registradas</span>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [style]="{ width: '500px' }"
+  [header]="selectedSeries.id ? 'Editar Serie' : 'Nueva Serie'"
+  [modal]="true"
+>
+  <ng-template #content>
+    <div class="series-form">
+      <div class="form-field">
+        <label for="documentType" class="font-bold">Tipo de comprobante</label>
+        <input
+          id="documentType"
+          type="text"
+          pInputText
+          [(ngModel)]="selectedSeries.documentType"
+          readonly
+          fluid
+        />
+        <small class="text-muted-color">
+          En esta versión solo está disponible el ticket interno.
+        </small>
+      </div>
+
+      <div class="form-field">
+        <label for="seriesCode" class="font-bold">Serie</label>
+        <input
+          id="seriesCode"
+          type="text"
+          pInputText
+          [(ngModel)]="selectedSeries.seriesCode"
+          maxlength="4"
+          placeholder="T001"
+          fluid
+        />
+        @if (
+          submitted
+          && isSeriesCodeInvalid()
+        ) {
+          <small class="field-error">La serie debe tener el formato T001.</small>
+        }
+        @if (backendErrors['seriesCode']) {
+          <small class="field-error">{{ backendErrors['seriesCode'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="nextNumber" class="font-bold">Próximo número</label>
+        <p-inputnumber
+          inputId="nextNumber"
+          [(ngModel)]="selectedSeries.nextNumber"
+          [min]="1"
+          [maxFractionDigits]="0"
+          [useGrouping]="false"
+          fluid
+        />
+        <small class="text-muted-color">
+          Este será el próximo correlativo utilizado al emitir un ticket.
+        </small>
+        @if (submitted && selectedSeries.nextNumber < 1) {
+          <small class="field-error">
+            El próximo número debe ser mayor o igual a 1.
+          </small>
+        }
+        @if (backendErrors['nextNumber']) {
+          <small class="field-error">{{ backendErrors['nextNumber'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <div class="font-bold">Estado</div>
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex items-center">
+            <p-radiobutton
+              inputId="seriesActive"
+              name="seriesStatus"
+              [value]="true"
+              [(ngModel)]="selectedSeries.status"
+            />
+            <label for="seriesActive" class="leading-none ml-2">ACTIVO</label>
+          </div>
+          <div class="flex items-center">
+            <p-radiobutton
+              inputId="seriesInactive"
+              name="seriesStatus"
+              [value]="false"
+              [(ngModel)]="selectedSeries.status"
+            />
+            <label for="seriesInactive" class="leading-none ml-2">INACTIVO</label>
+          </div>
+        </div>
+        @if (backendErrors['status']) {
+          <small class="field-error">{{ backendErrors['status'] }}</small>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      text
+      (onClick)="dialogVisible = false"
+    />
+    <p-button
+      label="Guardar"
+      icon="pi pi-save"
+      [loading]="saving"
+      (onClick)="save()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

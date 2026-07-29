@@ -1,0 +1,286 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="mb-6">
+  <ng-template #start>
+    <div class="font-semibold text-xl">Listado Clientes</div>
+  </ng-template>
+  <ng-template #end>
+    @if (canCreate()) {
+      <p-button
+        label="Nuevo Cliente"
+        icon="pi pi-plus"
+        severity="success"
+        class="mr-2"
+        (onClick)="openNew()"
+      />
+    }
+  </ng-template>
+</p-toolbar>
+
+<p-table
+  #dt
+  [value]="clients()"
+  [lazy]="true"
+  (onLazyLoad)="load($event)"
+  [paginator]="true"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+  [loading]="loading"
+  [tableStyle]="{ 'min-width': '82rem' }"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords}"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <div class="flex items-center justify-between">
+      <h5 class="m-0"></h5>
+      <p-iconfield>
+        <p-inputicon styleClass="pi pi-search" />
+        <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
+      </p-iconfield>
+    </div>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      <th pSortableColumn="documentType" style="min-width: 8rem">
+        Tipo
+        <p-sortIcon field="documentType" />
+      </th>
+      <th pSortableColumn="documentNumber" style="min-width: 11rem">
+        Documento
+        <p-sortIcon field="documentNumber" />
+      </th>
+      <th pSortableColumn="name" style="min-width: 16rem">
+        Nombre
+        <p-sortIcon field="name" />
+      </th>
+      <th pSortableColumn="phone" style="min-width: 10rem">
+        Teléfono
+        <p-sortIcon field="phone" />
+      </th>
+      <th pSortableColumn="email" style="min-width: 15rem">
+        Correo
+        <p-sortIcon field="email" />
+      </th>
+      <th style="min-width: 15rem">Dirección</th>
+      <th pSortableColumn="status" style="min-width: 9rem">
+        Estado
+        <p-sortIcon field="status" />
+      </th>
+      <th style="min-width: 14rem">Acciones</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-client>
+    <tr>
+      <td>{{ client.documentType }}</td>
+      <td>{{ client.documentNumber }}</td>
+      <td>{{ client.name }}</td>
+      <td>{{ client.phone || '-' }}</td>
+      <td>{{ client.email || '-' }}</td>
+      <td>{{ client.address || '-' }}</td>
+      <td>
+        <p-tag
+          [value]="client.status ? 'ACTIVO' : 'INACTIVO'"
+          [severity]="client.status ? 'success' : 'danger'"
+        ></p-tag>
+      </td>
+      <td>
+        @if (canUpdate()) {
+          <p-button
+            icon="pi pi-pencil"
+            label="Editar"
+            class="mr-2"
+            [rounded]="true"
+            [outlined]="true"
+            (click)="edit(client)"
+          />
+        }
+        @if (canDelete()) {
+          <p-button
+            icon="pi pi-trash"
+            label="Eliminar"
+            severity="danger"
+            [rounded]="true"
+            [outlined]="true"
+            (click)="remove(client)"
+          />
+        }
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td colspan="8" class="!text-center py-6 text-gray-500">
+        <i class="pi pi-info-circle mr-2"></i>
+        <span class="font-semibold">No se encontraron registros</span>
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog
+  [(visible)]="dialogVisible"
+  [style]="{ width: '650px' }"
+  [breakpoints]="{ '768px': '95vw' }"
+  [header]="dialogMode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'"
+  [modal]="true"
+>
+  <ng-template #content>
+    <form [formGroup]="clientForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <label for="documentType" class="block font-bold mb-3">Tipo de documento</label>
+        <p-select
+          id="documentType"
+          [options]="documentTypes"
+          formControlName="documentType"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Seleccione"
+          fluid
+        ></p-select>
+        @if (submitted && clientForm.get('documentType')?.errors?.['required']) {
+          <small class="text-red-500 block">El tipo de documento es requerido.</small>
+        }
+        @if (submitted && backendErrors['documentType']) {
+          <small class="text-red-500 block">{{ backendErrors['documentType'] }}</small>
+        }
+      </div>
+
+      <div>
+        <label for="documentNumber" class="block font-bold mb-3">
+          {{ documentNumberLabel }}
+        </label>
+        <input
+          type="text"
+          pInputText
+          id="documentNumber"
+          formControlName="documentNumber"
+          maxlength="12"
+          fluid
+        />
+        @if (
+          submitted &&
+          (clientForm.get('documentNumber')?.errors?.['required'] ||
+            clientForm.get('documentNumber')?.errors?.['pattern'])
+        ) {
+          <small class="text-red-500 block">{{ documentNumberHint }}</small>
+        }
+        @if (submitted && backendErrors['documentNumber']) {
+          <small class="text-red-500 block">{{ backendErrors['documentNumber'] }}</small>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="name" class="block font-bold mb-3">Nombre o razón social</label>
+        <input type="text" pInputText id="name" formControlName="name" maxlength="100" fluid />
+        @if (submitted && clientForm.get('name')?.errors?.['required']) {
+          <small class="text-red-500 block">El nombre del cliente es requerido.</small>
+        }
+        @if (submitted && clientForm.get('name')?.errors?.['maxlength']) {
+          <small class="text-red-500 block">
+            El nombre no debe superar 100 caracteres.
+          </small>
+        }
+        @if (submitted && backendErrors['name']) {
+          <small class="text-red-500 block">{{ backendErrors['name'] }}</small>
+        }
+      </div>
+
+      <div>
+        <label for="phone" class="block font-bold mb-3">Teléfono</label>
+        <input
+          type="text"
+          pInputText
+          id="phone"
+          formControlName="phone"
+          maxlength="10"
+          fluid
+        />
+        @if (submitted && clientForm.get('phone')?.errors?.['pattern']) {
+          <small class="text-red-500 block">
+            El teléfono debe contener entre 9 y 10 dígitos.
+          </small>
+        }
+        @if (submitted && backendErrors['phone']) {
+          <small class="text-red-500 block">{{ backendErrors['phone'] }}</small>
+        }
+      </div>
+
+      <div>
+        <label for="email" class="block font-bold mb-3">Correo electrónico</label>
+        <input type="email" pInputText id="email" formControlName="email" maxlength="100" fluid />
+        @if (submitted && clientForm.get('email')?.errors?.['email']) {
+          <small class="text-red-500 block">El formato del correo no es válido.</small>
+        }
+        @if (submitted && clientForm.get('email')?.errors?.['maxlength']) {
+          <small class="text-red-500 block">
+            El correo no debe superar 100 caracteres.
+          </small>
+        }
+        @if (submitted && backendErrors['email']) {
+          <small class="text-red-500 block">{{ backendErrors['email'] }}</small>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <label for="address" class="block font-bold mb-3">Dirección</label>
+        <textarea
+          pTextarea
+          id="address"
+          formControlName="address"
+          rows="3"
+          maxlength="200"
+          [autoResize]="true"
+          class="w-full"
+        ></textarea>
+        @if (submitted && clientForm.get('address')?.errors?.['maxlength']) {
+          <small class="text-red-500 block">
+            La dirección no debe superar 200 caracteres.
+          </small>
+        }
+        @if (submitted && backendErrors['address']) {
+          <small class="text-red-500 block">{{ backendErrors['address'] }}</small>
+        }
+      </div>
+
+      <div class="md:col-span-2">
+        <div class="font-bold mb-3">Estado</div>
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex items-center">
+            <p-radiobutton
+              id="statusActive"
+              name="status"
+              [value]="true"
+              formControlName="status"
+            />
+            <label for="statusActive" class="leading-none ml-2">ACTIVO</label>
+          </div>
+          <div class="flex items-center">
+            <p-radiobutton
+              id="statusInactive"
+              name="status"
+              [value]="false"
+              formControlName="status"
+            />
+            <label for="statusInactive" class="leading-none ml-2">INACTIVO</label>
+          </div>
+        </div>
+        @if (submitted && backendErrors['status']) {
+          <small class="text-red-500 block">{{ backendErrors['status'] }}</small>
+        }
+      </div>
+    </form>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button label="Cancelar" icon="pi pi-times" text (click)="dialogVisible = false" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="save()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />

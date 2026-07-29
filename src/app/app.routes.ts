@@ -39,6 +39,31 @@ export const routes: Routes = [
              import('./pages/court/court').then(m => m.CourtComponent)
         },
         {
+          path: 'Reserva',
+          data: { routePath: 'Reserva', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/reservation/reservation').then(m => m.ReservationComponent)
+        },
+        {
+          path: 'Cliente',
+          data: { routePath: 'Cliente', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/client/client').then(m => m.ClientComponent)
+        },
+        {
+          path: 'Empresa',
+          data: { routePath: 'Empresa', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/company/company').then(m => m.CompanyComponent)
+        },
+        {
+          path: 'Serie',
+          data: { routePath: 'Serie', permission: 'canRead' },
+          loadComponent: () =>
+             import('./pages/receipt-series/receipt-series')
+               .then(m => m.ReceiptSeriesComponent)
+        },
+        {
           path: 'Rol',
           data: { routePath: 'Rol', permission: 'canRead' },
           loadComponent: () =>

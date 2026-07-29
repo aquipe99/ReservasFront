@@ -1,0 +1,1146 @@
+<div class="card">
+  <p-breadcrumb [model]="breadcrumbItems" [home]="breadcrumbHome"></p-breadcrumb>
+</div>
+
+<p-toolbar styleClass="reservation-toolbar mb-4">
+  <ng-template #start>
+    <div class="toolbar-title">
+      <span class="font-semibold text-xl">Calendario de Reservas</span>
+      <span class="week-title">{{ weekTitle }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template #end>
+    <div class="toolbar-actions">
+      <p-button
+        icon="pi pi-chevron-left"
+        severity="secondary"
+        [outlined]="true"
+        pTooltip="Semana anterior"
+        tooltipPosition="bottom"
+        (onClick)="navigateWeek(-7)"
+      />
+      <p-button
+        label="Semana actual"
+        icon="pi pi-calendar"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="goToCurrentWeek()"
+      />
+      <p-button
+        icon="pi pi-chevron-right"
+        severity="secondary"
+        [outlined]="true"
+        pTooltip="Semana siguiente"
+        tooltipPosition="bottom"
+        (onClick)="navigateWeek(7)"
+      />
+
+      <p-datepicker
+        [(ngModel)]="selectedDate"
+        dateFormat="dd/mm/yy"
+        [showIcon]="true"
+        [showButtonBar]="true"
+        appendTo="body"
+        inputId="calendarDate"
+        placeholder="Buscar fecha"
+        (onSelect)="onDateChange($event)"
+      ></p-datepicker>
+
+      @if (canCreate()) {
+      <p-button
+        label="Nueva Reserva"
+        icon="pi pi-plus"
+        severity="success"
+        (onClick)="openNew()"
+      />
+      }
+    </div>
+  </ng-template>
+</p-toolbar>
+
+<div class="calendar-actions mb-4">
+  <div class="status-legend">
+    <span><i class="legend-color legend-paid"></i>Pagado</span>
+    <span><i class="legend-color legend-partial"></i>Pago parcial</span>
+    <span><i class="legend-color legend-separated"></i>Separado</span>
+  </div>
+
+  <div class="capture-actions">
+    <p-button
+      label="Vista previa"
+      icon="pi pi-image"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="captureCalendar()"
+    />
+    <p-button
+      label="Compartir"
+      icon="pi pi-share-alt"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="captureCalendar(true)"
+    />
+    <p-button
+      label="Imprimir calendario"
+      icon="pi pi-print"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="printCalendar()"
+    />
+  </div>
+</div>
+
+@if (loading) {
+<div class="calendar-loading">
+  <p-progress-spinner strokeWidth="4" ariaLabel="Cargando calendario" />
+  <span>Cargando calendario...</span>
+</div>
+} @else if (calendar(); as calendarData) {
+  @if (calendarData.courts.length > 0) {
+  <section id="reservation-calendar-print" class="calendar-print-area">
+    <div class="print-heading">
+      <h2>Calendario semanal de reservas</h2>
+      <p>{{ weekTitle }}</p>
+    </div>
+
+    <div class="calendar-scroll">
+      <div class="calendar-board">
+        <div class="calendar-header">
+          <div class="time-header">Hora</div>
+
+          <div class="day-headers">
+            @for (day of weekDays(); track day.date) {
+            <div
+              class="day-header"
+              [style.--court-count]="calendarData.courts.length"
+            >
+              <div class="day-date">
+                <strong>{{ day.dayName | titlecase }} {{ day.dayNumber }}</strong>
+                <span>{{ day.monthName | titlecase }}</span>
+              </div>
+
+              <div class="court-headers">
+                @for (court of calendarData.courts; track court.id) {
+                <div class="court-header" [title]="court.name">
+                  <i class="pi pi-map-marker"></i>
+                  <span>{{ court.name }}</span>
+                </div>
+                }
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="calendar-body">
+          <div class="time-column">
+            @for (time of timeSlots; track time) {
+            <div class="time-slot-label">{{ time }}</div>
+            }
+            <div class="closing-time">23:30</div>
+          </div>
+
+          <div class="reservation-columns">
+            @for (day of weekDays(); track day.date) {
+              @for (court of calendarData.courts; track court.id) {
+              <div class="reservation-column">
+                @for (time of timeSlots; track time) {
+                <button
+                  type="button"
+                  class="empty-slot"
+                  [class.slot-unavailable]="
+                    isPastCalendarDate(day.date)
+                    || !isSlotAvailable(day.date, court.id!, time)
+                  "
+                  [disabled]="
+                    !canCreate()
+                    || isPastCalendarDate(day.date)
+                    || !isSlotAvailable(day.date, court.id!, time)
+                  "
+                  [attr.aria-label]="'Crear reserva en ' + court.name + ', ' + day.date + ' a las ' + time"
+                  (click)="openNew(day.date, time, court.id)"
+                ></button>
+                }
+
+                @for (
+                  reservationItem of getReservations(day.date, court.id!);
+                  track reservationItem.id
+                ) {
+                <button
+                  type="button"
+                  [ngClass]="[
+                    'reservation-block',
+                    'status-' + reservationItem.status.toLowerCase().replace('_', '-')
+                  ]"
+                  [ngStyle]="getReservationPosition(reservationItem)"
+                  [attr.aria-label]="'Ver reserva de ' + reservationItem.clientName"
+                  (click)="openDetail(reservationItem)"
+                >
+                  <strong>{{ reservationItem.clientName }}</strong>
+                  <span>
+                    {{ formatTimeRange(reservationItem.startTime, reservationItem.endTime) }}
+                  </span>
+
+                  @if (reservationItem.status === 'PAGO_PARCIAL') {
+                  <small>
+                    Pendiente: {{ formatCurrency(reservationItem.balanceAmount) }}
+                  </small>
+                  } @else if (reservationItem.status === 'SEPARADO') {
+                  <small>Debe: {{ formatCurrency(reservationItem.balanceAmount) }}</small>
+                  }
+                </button>
+                }
+              </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-legend">
+      <span><i class="legend-color legend-paid"></i>Pagado</span>
+      <span><i class="legend-color legend-partial"></i>Pago parcial</span>
+      <span><i class="legend-color legend-separated"></i>Separado</span>
+    </div>
+  </section>
+  } @else {
+  <div class="empty-calendar">
+    <i class="pi pi-info-circle"></i>
+    <strong>No existen canchas activas</strong>
+    <span>Registre o active una cancha para comenzar a gestionar reservas.</span>
+  </div>
+  }
+} @else {
+<div class="empty-calendar">
+  <i class="pi pi-calendar-times"></i>
+  <strong>No se pudo mostrar el calendario</strong>
+  <span>Intente actualizar nuevamente la información.</span>
+</div>
+}
+
+<p-dialog
+  [(visible)]="calendarPreviewVisible"
+  [modal]="true"
+  [draggable]="false"
+  [maximizable]="true"
+  [style]="{ width: '95vw' }"
+  [breakpoints]="{ '640px': '100vw' }"
+  header="Vista previa del calendario"
+  (onHide)="releaseCalendarPreview()"
+>
+  @if (calendarPreviewUrl) {
+  <div
+    style="
+      max-width: 100%;
+      max-height: calc(100vh - 13rem);
+      overflow: auto;
+      background: #f8fafc;
+      border: 1px solid var(--surface-border);
+      border-radius: 0.5rem;
+    "
+  >
+    <img
+      [src]="calendarPreviewUrl"
+      alt="Vista previa del calendario semanal de reservas"
+      style="
+        display: block;
+        width: auto;
+        max-width: none;
+        height: auto;
+        touch-action: pinch-zoom;
+      "
+    />
+  </div>
+  }
+
+  <ng-template #footer>
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      [text]="true"
+      (onClick)="closeCalendarPreview()"
+    />
+    <p-button
+      label="Compartir"
+      icon="pi pi-share-alt"
+      (onClick)="shareCalendarPreview()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="reservationDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '52rem' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '96vw' }"
+  [header]="dialogMode === 'create' ? 'Nueva Reserva' : 'Editar Reserva'"
+>
+  <ng-template #content>
+    <div class="reservation-form">
+      <div class="form-field field-full">
+        <label for="clientId">Cliente</label>
+        <div class="flex gap-2 items-start">
+          <p-select
+            inputId="clientId"
+            [options]="clients()"
+            [(ngModel)]="reservation.clientId"
+            optionLabel="name"
+            optionValue="id"
+            placeholder="Buscar por nombre o documento"
+            [filter]="true"
+            filterBy="name,documentNumber"
+            [showClear]="true"
+            [disabled]="isPaidEdit()"
+            appendTo="body"
+            styleClass="w-full"
+            (onChange)="onClientSelect()"
+          >
+            <ng-template #item let-client>
+              <div class="flex flex-col">
+                <strong>{{ client.name }}</strong>
+                <small>{{ client.documentType }}: {{ client.documentNumber }}</small>
+              </div>
+            </ng-template>
+          </p-select>
+          @if (canCreateClient() && !isPaidEdit()) {
+            <p-button
+              label="Nuevo"
+              icon="pi pi-user-plus"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openNewClient()"
+            />
+          }
+        </div>
+        @if (submitted && !reservation.clientId) {
+        <small class="field-error">Debe seleccionar o registrar un cliente.</small>
+        }
+        @if (backendErrors['clientId']) {
+        <small class="field-error">{{ backendErrors['clientId'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="clientName">Nombre del cliente</label>
+        <input
+          id="clientName"
+          type="text"
+          pInputText
+          [(ngModel)]="reservation.clientName"
+          maxlength="100"
+          required
+          autofocus
+          fluid
+        />
+        @if (submitted && !reservation.clientName.trim()) {
+        <small class="field-error">El nombre del cliente es requerido.</small>
+        }
+        @if (backendErrors['clientName']) {
+        <small class="field-error">{{ backendErrors['clientName'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="clientDocumentType">Tipo de documento</label>
+        <p-select
+          inputId="clientDocumentType"
+          [options]="documentTypes"
+          [(ngModel)]="reservation.clientDocumentType"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          [disabled]="true"
+        ></p-select>
+      </div>
+
+      <div class="form-field">
+        <label for="clientDocumentNumber">Número de documento</label>
+        <input
+          id="clientDocumentNumber"
+          type="text"
+          pInputText
+          [(ngModel)]="reservation.clientDocumentNumber"
+          maxlength="12"
+          readonly
+          fluid
+        />
+        @if (
+          submitted
+          && !isValidDocument(
+            reservation.clientDocumentType,
+            reservation.clientDocumentNumber
+          )
+        ) {
+        <small class="field-error">{{ documentHint(reservation.clientDocumentType) }}</small>
+        }
+        @if (backendErrors['clientDocumentNumber']) {
+        <small class="field-error">{{ backendErrors['clientDocumentNumber'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="phone">Teléfono (opcional)</label>
+        <input
+          id="phone"
+          type="text"
+          pInputText
+          [(ngModel)]="reservation.phone"
+          maxlength="10"
+          inputmode="numeric"
+          [readonly]="isPaidEdit()"
+          fluid
+        />
+        @if (
+          submitted
+          && reservation.phone
+          && !reservation.phone.match('^[0-9]{9,10}$')
+        ) {
+        <small class="field-error">El teléfono debe contener entre 9 y 10 dígitos.</small>
+        }
+        @if (backendErrors['phone']) {
+        <small class="field-error">{{ backendErrors['phone'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="reservationDate">Fecha</label>
+        <input
+          id="reservationDate"
+          type="date"
+          pInputText
+          [(ngModel)]="reservation.reservationDate"
+          [min]="todayIso"
+          fluid
+        />
+        @if (submitted && !reservation.reservationDate) {
+        <small class="field-error">La fecha es requerida.</small>
+        }
+        @if (submitted && isReservationDateInPast()) {
+        <small class="field-error">
+          La fecha no puede ser anterior a la fecha actual.
+        </small>
+        }
+        @if (backendErrors['reservationDate']) {
+        <small class="field-error">{{ backendErrors['reservationDate'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="courtId">Cancha</label>
+        <p-select
+          inputId="courtId"
+          [options]="options().courts"
+          [(ngModel)]="reservation.courtId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Seleccione una cancha"
+          appendTo="body"
+          styleClass="w-full"
+        ></p-select>
+        @if (submitted && !reservation.courtId) {
+        <small class="field-error">La cancha es requerida.</small>
+        }
+        @if (backendErrors['courtId']) {
+        <small class="field-error">{{ backendErrors['courtId'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="startTime">Hora de inicio</label>
+        <input
+          id="startTime"
+          type="time"
+          pInputText
+          [(ngModel)]="reservation.startTime"
+          min="07:00"
+          max="23:00"
+          step="1800"
+          fluid
+        />
+        @if (backendErrors['startTime']) {
+        <small class="field-error">{{ backendErrors['startTime'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="endTime">Hora de fin</label>
+        <input
+          id="endTime"
+          type="time"
+          pInputText
+          [(ngModel)]="reservation.endTime"
+          min="07:30"
+          max="23:30"
+          step="1800"
+          fluid
+        />
+        @if (
+          submitted
+          && (
+            reservation.startTime < '07:00'
+            || reservation.endTime > '23:30'
+            || reservation.startTime >= reservation.endTime
+          )
+        ) {
+        <small class="field-error">
+          El horario debe estar comprendido entre las 07:00 y las 23:30.
+        </small>
+        }
+        @if (backendErrors['endTime']) {
+        <small class="field-error">{{ backendErrors['endTime'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="paymentType">Tipo de pago</label>
+        <p-select
+          inputId="paymentType"
+          [options]="paymentTypes"
+          [(ngModel)]="reservation.paymentType"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          styleClass="w-full"
+          [disabled]="dialogMode === 'edit'"
+          (onChange)="onPaymentTypeChange()"
+        ></p-select>
+        @if (backendErrors['paymentType']) {
+        <small class="field-error">{{ backendErrors['paymentType'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="totalAmount">Monto total</label>
+        <p-inputnumber
+          inputId="totalAmount"
+          [(ngModel)]="reservation.totalAmount"
+          mode="currency"
+          currency="PEN"
+          locale="es-PE"
+          [min]="0"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          styleClass="w-full"
+          [disabled]="isPaidEdit()"
+          (onInput)="onTotalAmountChange()"
+        ></p-inputnumber>
+        @if (submitted && reservation.totalAmount <= 0) {
+        <small class="field-error">El monto total debe ser mayor que cero.</small>
+        }
+        @if (backendErrors['totalAmount']) {
+        <small class="field-error">{{ backendErrors['totalAmount'] }}</small>
+        }
+      </div>
+
+      @if (reservation.paymentType !== 'SIN_PAGO') {
+      <div class="form-field">
+        <label for="paymentMethodId">Medio de pago</label>
+        <p-select
+          inputId="paymentMethodId"
+          [options]="options().paymentMethods"
+          [(ngModel)]="reservation.paymentMethodId"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Seleccione un medio"
+          appendTo="body"
+          styleClass="w-full"
+          [disabled]="dialogMode === 'edit'"
+        ></p-select>
+        @if (submitted && !reservation.paymentMethodId) {
+        <small class="field-error">El medio de pago es requerido.</small>
+        }
+        @if (backendErrors['paymentMethodId']) {
+        <small class="field-error">{{ backendErrors['paymentMethodId'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="paidAmount">Monto pagado</label>
+        <p-inputnumber
+          inputId="paidAmount"
+          [(ngModel)]="reservation.paidAmount"
+          mode="currency"
+          currency="PEN"
+          locale="es-PE"
+          [min]="0"
+          [max]="reservation.totalAmount"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          styleClass="w-full"
+          [disabled]="dialogMode === 'edit' || reservation.paymentType === 'PAGO_COMPLETO'"
+        ></p-inputnumber>
+        @if (
+          submitted
+          && (
+            reservation.paidAmount < 0
+            || reservation.paidAmount > reservation.totalAmount
+            || (
+              reservation.paymentType === 'PAGO_PARCIAL'
+              && (
+                reservation.paidAmount <= 0
+                || reservation.paidAmount >= reservation.totalAmount
+              )
+            )
+          )
+        ) {
+        <small class="field-error">El monto pagado no corresponde al tipo de pago.</small>
+        }
+        @if (backendErrors['paidAmount']) {
+        <small class="field-error">{{ backendErrors['paidAmount'] }}</small>
+        }
+      </div>
+      }
+
+      @if (backendErrors['schedule']) {
+      <div class="field-error field-full">{{ backendErrors['schedule'] }}</div>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      [disabled]="saving"
+      (onClick)="reservationDialogVisible = false"
+    />
+    <p-button
+      label="Guardar"
+      icon="pi pi-check"
+      [loading]="saving"
+      (onClick)="saveReservation()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="clientDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '42rem' }"
+  [breakpoints]="{ '640px': '96vw' }"
+  header="Registrar Cliente"
+>
+  <ng-template #content>
+    <div class="reservation-form">
+      <div class="form-field">
+        <label for="newClientDocumentType">Tipo de documento</label>
+        <p-select
+          inputId="newClientDocumentType"
+          [options]="documentTypes"
+          [(ngModel)]="newClient.documentType"
+          optionLabel="label"
+          optionValue="value"
+          appendTo="body"
+          styleClass="w-full"
+        ></p-select>
+        @if (clientBackendErrors['documentType']) {
+        <small class="field-error">{{ clientBackendErrors['documentType'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="newClientDocumentNumber">Número de documento</label>
+        <input
+          id="newClientDocumentNumber"
+          type="text"
+          pInputText
+          [(ngModel)]="newClient.documentNumber"
+          maxlength="12"
+          fluid
+        />
+        @if (
+          clientSubmitted
+          && !isValidDocument(newClient.documentType, newClient.documentNumber)
+        ) {
+        <small class="field-error">{{ documentHint(newClient.documentType) }}</small>
+        }
+        @if (clientBackendErrors['documentNumber']) {
+        <small class="field-error">{{ clientBackendErrors['documentNumber'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="newClientName">Nombre o razón social</label>
+        <input
+          id="newClientName"
+          type="text"
+          pInputText
+          [(ngModel)]="newClient.name"
+          maxlength="100"
+          fluid
+        />
+        @if (clientSubmitted && !newClient.name.trim()) {
+        <small class="field-error">El nombre del cliente es requerido.</small>
+        }
+        @if (clientBackendErrors['name']) {
+        <small class="field-error">{{ clientBackendErrors['name'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="newClientPhone">Teléfono (opcional)</label>
+        <input
+          id="newClientPhone"
+          type="text"
+          pInputText
+          [(ngModel)]="newClient.phone"
+          maxlength="10"
+          inputmode="numeric"
+          fluid
+        />
+        @if (
+          clientSubmitted
+          && newClient.phone
+          && !newClient.phone.match('^[0-9]{9,10}$')
+        ) {
+        <small class="field-error">El teléfono debe contener entre 9 y 10 dígitos.</small>
+        }
+        @if (clientBackendErrors['phone']) {
+        <small class="field-error">{{ clientBackendErrors['phone'] }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label for="newClientEmail">Correo electrónico (opcional)</label>
+        <input
+          id="newClientEmail"
+          type="email"
+          pInputText
+          [(ngModel)]="newClient.email"
+          maxlength="100"
+          fluid
+        />
+        @if (
+          clientSubmitted
+          && newClient.email
+          && !newClient.email.match('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        ) {
+        <small class="field-error">El formato del correo no es válido.</small>
+        }
+        @if (clientBackendErrors['email']) {
+        <small class="field-error">{{ clientBackendErrors['email'] }}</small>
+        }
+      </div>
+
+      <div class="form-field field-full">
+        <label for="newClientAddress">Dirección (opcional)</label>
+        <textarea
+          id="newClientAddress"
+          pTextarea
+          [(ngModel)]="newClient.address"
+          maxlength="200"
+          rows="3"
+          [autoResize]="true"
+          class="w-full"
+        ></textarea>
+        @if (clientBackendErrors['address']) {
+        <small class="field-error">{{ clientBackendErrors['address'] }}</small>
+        }
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      [disabled]="clientSaving"
+      (onClick)="clientDialogVisible = false"
+    />
+    <p-button
+      label="Registrar y seleccionar"
+      icon="pi pi-check"
+      [loading]="clientSaving"
+      (onClick)="saveNewClient()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="detailDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '52rem' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '96vw' }"
+  header="Detalle de la Reserva"
+>
+  @if (selectedReservation(); as detail) {
+  <div class="reservation-detail">
+    <div class="detail-heading">
+      <div>
+        <span class="detail-label">Cliente</span>
+        <h3>{{ detail.clientName }}</h3>
+      </div>
+      <p-tag
+        [value]="statusLabel(detail.status)"
+        [severity]="statusSeverity(detail.status)"
+      ></p-tag>
+    </div>
+
+    <div class="detail-grid">
+      <div>
+        <span>{{ detail.clientDocumentType }}</span>
+        <strong>{{ detail.clientDocumentNumber }}</strong>
+      </div>
+      <div><span>Teléfono</span><strong>{{ detail.phone || '-' }}</strong></div>
+      <div><span>Fecha</span><strong>{{ formatDate(detail.reservationDate) }}</strong></div>
+      <div>
+        <span>Horario</span>
+        <strong>{{ formatTimeRange(detail.startTime, detail.endTime) }}</strong>
+      </div>
+      <div><span>Cancha</span><strong>{{ detail.courtName }}</strong></div>
+      <div>
+        <span>Medio de pago</span>
+        <strong>{{ detail.paymentMethodName || 'Sin pago' }}</strong>
+      </div>
+      <div><span>Tipo de pago</span><strong>{{ detail.paymentType }}</strong></div>
+      <div><span>Monto total</span><strong>{{ formatCurrency(detail.totalAmount) }}</strong></div>
+      <div><span>Monto pagado</span><strong>{{ formatCurrency(detail.paidAmount) }}</strong></div>
+      <div class="balance-detail">
+        <span>Saldo pendiente</span>
+        <strong>{{ formatCurrency(detail.balanceAmount) }}</strong>
+      </div>
+    </div>
+
+    @if (detail.status === 'ANULADA') {
+    <div class="cancellation-detail">
+      <strong>Reserva anulada</strong>
+      <span>{{ detail.cancellationReason }}</span>
+      <small>{{ formatDateTime(detail.cancelledAt) }}</small>
+    </div>
+    }
+
+    <div class="payment-history">
+      <h4>Historial de pagos</h4>
+
+      @if (detail.payments.length > 0) {
+      <div class="payment-table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Medio</th>
+              <th class="text-right">Importe</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (paymentItem of detail.payments; track paymentItem.id) {
+            <tr>
+              <td>{{ formatDateTime(paymentItem.paymentDate) }}</td>
+              <td>{{ paymentItem.paymentMethodName }}</td>
+              <td class="text-right">{{ formatCurrency(paymentItem.amount) }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <div class="empty-payments">Todavía no se han registrado pagos.</div>
+      }
+    </div>
+  </div>
+  }
+
+  <ng-template #footer>
+    @if (selectedReservation(); as detail) {
+      @if (canUpdate() && detail.status !== 'ANULADA') {
+      <p-button
+        label="Editar"
+        icon="pi pi-pencil"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="openEdit()"
+      />
+      }
+
+      @if (canUpdate() && detail.balanceAmount > 0 && detail.status !== 'ANULADA') {
+      <p-button
+        label="Registrar pago"
+        icon="pi pi-wallet"
+        severity="warn"
+        (onClick)="openPayment()"
+      />
+      }
+
+      @if (
+        canDelete()
+        && detail.status !== 'PAGADO'
+        && detail.status !== 'ANULADA'
+      ) {
+      <p-button
+        label="Anular"
+        icon="pi pi-ban"
+        severity="danger"
+        [outlined]="true"
+        (onClick)="openCancellation()"
+      />
+      }
+
+      @if (detail.status === 'PAGADO') {
+        @if (ticketLoading) {
+          <p-button
+            label="Consultando ticket"
+            icon="pi pi-spin pi-spinner"
+            [disabled]="true"
+          />
+        } @else if (selectedTicket()) {
+          <p-button
+            label="Vista previa del Ticket"
+            icon="pi pi-receipt"
+            severity="success"
+            (onClick)="openTicketPreview()"
+          />
+        } @else if (canCreate()) {
+          <p-button
+            label="Emitir Ticket"
+            icon="pi pi-receipt"
+            severity="success"
+            [loading]="ticketEmitting"
+            (onClick)="emitTicket()"
+          />
+        }
+      }
+    }
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="ticketPreviewVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '30rem' }"
+  [breakpoints]="{ '640px': '96vw' }"
+  header="Vista previa del Ticket"
+>
+  @if (selectedTicket(); as ticket) {
+    <div class="w-full max-w-sm mx-auto p-6 text-gray-900 bg-white border border-gray-300 rounded-lg font-mono">
+      <div class="text-center">
+        <h2 class="m-0 mb-1 font-mono">{{ ticket.companyTradeName }}</h2>
+        <div>{{ ticket.companyLegalName }}</div>
+        <div>RUC: {{ ticket.companyRuc }}</div>
+        <div>{{ ticket.companyFiscalAddress }}</div>
+        @if (ticket.companyPhone) {
+          <div>Teléfono: {{ ticket.companyPhone }}</div>
+        }
+        @if (ticket.companyEmail) {
+          <div>{{ ticket.companyEmail }}</div>
+        }
+      </div>
+
+      <div class="my-4 border-t border-dashed border-gray-600"></div>
+
+      <div class="mb-1 text-xl font-bold text-center">{{ ticket.fullNumber }}</div>
+      <div class="text-center">Constancia interna de reserva</div>
+
+      <div class="my-4 border-t border-dashed border-gray-600"></div>
+
+      <div class="flex justify-between gap-4 my-2">
+        <span>Emisión</span>
+        <strong class="text-right">{{ formatDateTime(ticket.issuedAt) }}</strong>
+      </div>
+      <div class="flex justify-between gap-4 my-2">
+        <span>Cliente</span>
+        <strong class="text-right">{{ ticket.clientName }}</strong>
+      </div>
+      <div class="flex justify-between gap-4 my-2">
+        <span>{{ ticket.clientDocumentType }}</span>
+        <strong class="text-right">{{ ticket.clientDocumentNumber }}</strong>
+      </div>
+      <div class="flex justify-between gap-4 my-2">
+        <span>Cancha</span>
+        <strong class="text-right">{{ ticket.courtName }}</strong>
+      </div>
+      <div class="flex justify-between gap-4 my-2">
+        <span>Fecha</span>
+        <strong class="text-right">{{ formatDate(ticket.reservationDate) }}</strong>
+      </div>
+      <div class="flex justify-between gap-4 my-2">
+        <span>Horario</span>
+        <strong class="text-right">{{ formatTimeRange(ticket.startTime, ticket.endTime) }}</strong>
+      </div>
+
+      <div class="my-4 border-t border-dashed border-gray-600"></div>
+
+      <div class="flex flex-col gap-1">
+        <strong>Pagos</strong>
+        @for (paymentItem of ticket.payments; track paymentItem.id) {
+          <div class="flex justify-between gap-4 my-1">
+            <span>{{ paymentItem.paymentMethodName }}</span>
+            <strong class="text-right">{{ formatCurrency(paymentItem.amount) }}</strong>
+          </div>
+        }
+      </div>
+      <div class="flex justify-between gap-4 mt-3 text-lg">
+        <span>Total pagado</span>
+        <strong class="text-right">{{ formatCurrency(ticket.totalPaid) }}</strong>
+      </div>
+
+      <div class="my-4 border-t border-dashed border-gray-600"></div>
+
+      <div class="mb-2 font-bold text-center">
+        No es un comprobante tributario
+      </div>
+      @if (ticket.companyAdditionalInfo) {
+        <div class="text-center">{{ ticket.companyAdditionalInfo }}</div>
+      }
+    </div>
+  }
+
+  <ng-template #footer>
+    <p-button
+      label="Cerrar"
+      icon="pi pi-times"
+      text
+      (onClick)="ticketPreviewVisible = false"
+    />
+    <p-button
+      label="Imprimir"
+      icon="pi pi-print"
+      severity="success"
+      (onClick)="printTicket()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="paymentDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '28rem' }"
+  [breakpoints]="{ '640px': '96vw' }"
+  header="Registrar Pago"
+>
+  @if (selectedReservation(); as detail) {
+  <div class="payment-form">
+    <div class="balance-summary">
+      <span>Saldo pendiente</span>
+      <strong>{{ formatCurrency(detail.balanceAmount) }}</strong>
+    </div>
+
+    <div class="form-field">
+      <label for="additionalPaymentMethod">Medio de pago</label>
+      <p-select
+        inputId="additionalPaymentMethod"
+        [options]="options().paymentMethods"
+        [(ngModel)]="payment.paymentMethodId"
+        optionLabel="name"
+        optionValue="id"
+        placeholder="Seleccione un medio"
+        appendTo="body"
+        styleClass="w-full"
+      ></p-select>
+      @if (paymentSubmitted && !payment.paymentMethodId) {
+      <small class="field-error">El medio de pago es requerido.</small>
+      }
+      @if (backendErrors['paymentMethodId']) {
+      <small class="field-error">{{ backendErrors['paymentMethodId'] }}</small>
+      }
+    </div>
+
+    <div class="form-field">
+      <label for="additionalAmount">Monto del pago</label>
+      <p-inputnumber
+        inputId="additionalAmount"
+        [(ngModel)]="payment.amount"
+        mode="currency"
+        currency="PEN"
+        locale="es-PE"
+        [min]="0"
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        styleClass="w-full"
+      ></p-inputnumber>
+      @if (paymentSubmitted && payment.amount <= 0) {
+      <small class="field-error">
+        El importe debe ser mayor que cero.
+      </small>
+      }
+      @if (paymentSubmitted && payment.amount > detail.balanceAmount) {
+      <small class="field-error">
+        El monto ingresado excede el saldo pendiente.
+      </small>
+      }
+      @if (backendErrors['amount']) {
+      <small class="field-error">{{ backendErrors['amount'] }}</small>
+      }
+    </div>
+  </div>
+  }
+
+  <ng-template #footer>
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      [disabled]="paymentSaving"
+      (onClick)="paymentDialogVisible = false"
+    />
+    <p-button
+      label="Registrar"
+      icon="pi pi-check"
+      [loading]="paymentSaving"
+      (onClick)="addPayment()"
+    />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  [(visible)]="cancellationDialogVisible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '30rem' }"
+  [breakpoints]="{ '640px': '96vw' }"
+  header="Anular Reserva"
+>
+  <div class="cancellation-form">
+    <div class="cancellation-warning">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>
+        La reserva será anulada y el horario quedará disponible inmediatamente.
+      </span>
+    </div>
+
+    <div class="form-field">
+      <label for="cancellationReason">Motivo de anulación</label>
+      <textarea
+        id="cancellationReason"
+        pTextarea
+        [(ngModel)]="cancellation.reason"
+        rows="4"
+        maxlength="200"
+        [autoResize]="true"
+        class="w-full"
+      ></textarea>
+      <small class="character-count">{{ cancellation.reason.length }}/200</small>
+      @if (cancellationSubmitted && !cancellation.reason.trim()) {
+      <small class="field-error">El motivo de anulación es requerido.</small>
+      }
+      @if (backendErrors['reason']) {
+      <small class="field-error">{{ backendErrors['reason'] }}</small>
+      }
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button
+      label="Cancelar"
+      icon="pi pi-times"
+      [text]="true"
+      [disabled]="cancellationSaving"
+      (onClick)="cancellationDialogVisible = false"
+    />
+    <p-button
+      label="Confirmar anulación"
+      icon="pi pi-ban"
+      severity="danger"
+      [loading]="cancellationSaving"
+      (onClick)="cancelReservation()"
+    />
+  </ng-template>
+</p-dialog>
